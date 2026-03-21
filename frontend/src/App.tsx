@@ -1,121 +1,100 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import Header from './components/Header';
+import Background3D from './components/Background3D';
+import UploadZone from './components/UploadZone';
+import AnalyzingState from './components/AnalyzingState';
+import ResultsPanel from './components/ResultsPanel';
+import { predict } from './api';
+import type { PredictionResult, AppState } from './types';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const appState: AppState = isAnalyzing
+    ? 'analyzing'
+    : result
+      ? 'results'
+      : 'upload';
+
+  const handleFileSelect = useCallback((file: File) => {
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setError(null);
+  }, []);
+
+  const handleClearFile = useCallback(() => {
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setError(null);
+  }, [previewUrl]);
+
+  const handleAnalyze = useCallback(async () => {
+    if (!selectedFile) return;
+    setIsAnalyzing(true);
+    setError(null);
+    setResult(null);
+    try {
+      const data = await predict(selectedFile);
+      setResult(data);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Analysis failed. Is the backend running?');
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [selectedFile]);
+
+  const handleNewScan = useCallback(() => {
+    setResult(null);
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setError(null);
+  }, [previewUrl]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div className="relative min-h-screen">
+      <Background3D appState={appState} />
+      <div className="relative z-10">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+          <AnimatePresence mode="wait">
+            {appState === 'upload' && (
+              <UploadZone
+                key="upload"
+                selectedFile={selectedFile}
+                previewUrl={previewUrl}
+                error={error}
+                onFileSelect={handleFileSelect}
+                onClearFile={handleClearFile}
+                onAnalyze={handleAnalyze}
+              />
+            )}
+            {appState === 'analyzing' && (
+              <AnalyzingState key="analyzing" />
+            )}
+            {appState === 'results' && result && (
+              <ResultsPanel
+                key="results"
+                result={result}
+                previewUrl={previewUrl}
+                onNewScan={handleNewScan}
+              />
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
