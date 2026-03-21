@@ -1,0 +1,23 @@
+# Misc. 
+.DS_Store
+
+# Env
+
+.env
+.env*
+*.local
+
+# Frontend
+
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.vscode/
+.pnpm-store
+.eslintcache
+
+# Python 
+
+venv/ 
+
