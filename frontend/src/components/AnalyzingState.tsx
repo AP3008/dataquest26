@@ -4,14 +4,13 @@ import { Brain } from 'lucide-react';
 export default function AnalyzingState() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="flex flex-col items-center justify-center min-h-[60vh] gap-8"
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="glass p-8 flex flex-col items-center justify-center gap-6"
     >
-      <div className="relative w-32 h-32 flex items-center justify-center">
-        {/* Outer ring */}
+      <div className="relative w-24 h-24 flex items-center justify-center">
         <div
           className="absolute inset-0 rounded-full border-2 border-[--border-subtle]"
           style={{
@@ -19,31 +18,28 @@ export default function AnalyzingState() {
             animation: 'spin-cw 1s linear infinite',
           }}
         />
-        {/* Middle ring */}
         <div
-          className="absolute inset-3 rounded-full border-2 border-[--border-subtle]"
+          className="absolute inset-2.5 rounded-full border-2 border-[--border-subtle]"
           style={{
             borderBottomColor: 'var(--text-muted)',
             animation: 'spin-ccw 1.5s linear infinite',
           }}
         />
-        {/* Inner ring */}
         <div
-          className="absolute inset-6 rounded-full border-2 border-[--border-subtle]"
+          className="absolute inset-5 rounded-full border-2 border-[--border-subtle]"
           style={{
             borderTopColor: 'var(--text-primary)',
             animation: 'spin-cw 2s linear infinite',
           }}
         />
-        {/* Center icon */}
-        <Brain className="w-8 h-8 text-[--text-primary]" />
+        <Brain className="w-6 h-6 text-[--text-primary]" />
       </div>
 
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-[--text-primary]">
+        <h3 className="text-lg font-bold text-[--text-primary]">
           Analyzing MRI Scan
-        </h2>
-        <p className="mt-2 text-[--text-secondary]">
+        </h3>
+        <p className="mt-1 text-sm text-[--text-secondary]">
           Running neural network inference...
         </p>
       </div>

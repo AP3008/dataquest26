@@ -1,10 +1,9 @@
 import { useState, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import Background3D from './components/Background3D';
-import UploadZone from './components/UploadZone';
-import AnalyzingState from './components/AnalyzingState';
-import ResultsPanel from './components/ResultsPanel';
+import HeroSection from './components/HeroSection';
+import ScanSection from './components/ScanSection';
+import { useMousePosition } from './hooks/useMousePosition';
 import { predict } from './api';
 import type { PredictionResult, AppState } from './types';
 
@@ -14,6 +13,8 @@ function App() {
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const mousePosition = useMousePosition();
 
   const appState: AppState = isAnalyzing
     ? 'analyzing'
@@ -62,36 +63,22 @@ function App() {
   }, [previewUrl]);
 
   return (
-    <div className="relative min-h-screen">
-      <Background3D appState={appState} />
+    <div className="relative">
+      <Background3D mousePosition={mousePosition} appState={appState} />
       <div className="relative z-10">
         <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
-          <AnimatePresence mode="wait">
-            {appState === 'upload' && (
-              <UploadZone
-                key="upload"
-                selectedFile={selectedFile}
-                previewUrl={previewUrl}
-                error={error}
-                onFileSelect={handleFileSelect}
-                onClearFile={handleClearFile}
-                onAnalyze={handleAnalyze}
-              />
-            )}
-            {appState === 'analyzing' && (
-              <AnalyzingState key="analyzing" />
-            )}
-            {appState === 'results' && result && (
-              <ResultsPanel
-                key="results"
-                result={result}
-                previewUrl={previewUrl}
-                onNewScan={handleNewScan}
-              />
-            )}
-          </AnimatePresence>
-        </main>
+        <HeroSection />
+        <ScanSection
+          appState={appState}
+          selectedFile={selectedFile}
+          previewUrl={previewUrl}
+          result={result}
+          error={error}
+          onFileSelect={handleFileSelect}
+          onClearFile={handleClearFile}
+          onAnalyze={handleAnalyze}
+          onNewScan={handleNewScan}
+        />
       </div>
     </div>
   );

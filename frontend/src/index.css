@@ -18,6 +18,10 @@
   --accent-emerald: #059669;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer base {
   body {
     @apply bg-surface-primary text-[--text-primary] font-sans antialiased overflow-x-hidden;

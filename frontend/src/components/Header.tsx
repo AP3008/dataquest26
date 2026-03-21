@@ -7,22 +7,19 @@ export default function Header() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="sticky top-0 z-30 glass px-6 py-4 flex items-center justify-between"
+      className="fixed top-0 left-0 right-0 z-30 px-6 py-4 flex items-center justify-between bg-white/40 backdrop-blur-md"
     >
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-[--text-primary] flex items-center justify-center">
-          <Eye className="w-5 h-5 text-white" />
+        <div className="w-8 h-8 rounded-lg bg-[--text-primary] flex items-center justify-center">
+          <Eye className="w-4 h-4 text-white" />
         </div>
-        <div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-bold text-[--text-primary] tracking-tight">
-              argus
-            </span>
-            <span className="text-lg font-light text-[--text-muted] tracking-tight">
-              labs
-            </span>
-          </div>
-          <p className="label-muted -mt-0.5">neural mri intelligence</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-base font-bold text-[--text-primary] tracking-tight">
+            argus
+          </span>
+          <span className="text-base font-light text-[--text-muted] tracking-tight">
+            labs
+          </span>
         </div>
       </div>
 

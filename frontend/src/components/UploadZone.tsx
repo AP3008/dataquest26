@@ -48,24 +48,14 @@ export default function UploadZone({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="flex flex-col items-center justify-center min-h-[60vh] gap-8"
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="flex flex-col gap-5"
     >
-      <div className="text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-[--text-primary] tracking-tight">
-          Upload MRI Scan
-        </h1>
-        <p className="mt-3 text-[--text-secondary] max-w-md mx-auto">
-          Drop a brain MRI image for instant classification and 3D region
-          mapping.
-        </p>
-      </div>
-
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 max-w-md w-full">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span className="text-sm">{error}</span>
         </div>
@@ -77,7 +67,7 @@ export default function UploadZone({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`
-          glass w-full max-w-lg aspect-[4/3] flex flex-col items-center justify-center
+          glass w-full aspect-[4/3] flex flex-col items-center justify-center
           cursor-pointer transition-all relative overflow-hidden
           ${isDragging ? 'border-[--text-primary] scale-[1.02] shadow-lg' : ''}
           ${selectedFile ? 'cursor-default' : ''}
@@ -146,21 +136,12 @@ export default function UploadZone({
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onAnalyze}
-          className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[--text-primary] text-white font-medium shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/15 transition-shadow"
+          className="flex items-center justify-center gap-2 w-full px-8 py-3.5 rounded-xl bg-[--text-primary] text-white font-medium shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/15 transition-shadow"
         >
           <Upload className="w-4 h-4" />
           Analyze Scan
         </motion.button>
       )}
-
-      <div className="flex items-center gap-6 mt-4">
-        {['CNN Model', '3D Mapping', '4-Class Detection'].map((tag) => (
-          <div key={tag} className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[--text-muted]" />
-            <span className="text-xs text-[--text-muted]">{tag}</span>
-          </div>
-        ))}
-      </div>
     </motion.div>
   );
 }
