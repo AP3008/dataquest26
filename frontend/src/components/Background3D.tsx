@@ -76,7 +76,7 @@ void main() {
   float dist = length(st - mouse);
 
   // Constant drift so clouds always ripple across the screen
-  vec2 drift = vec2(uTime * 0.06, uTime * 0.03);
+  vec2 drift = vec2(uTime * 0.12, uTime * 0.06);
 
   // Warp noise coords near cursor
   vec2 warpedSt = st + drift;
@@ -87,10 +87,10 @@ void main() {
 
   // Multi-octave noise
   float n = 0.0;
-  n += 0.5 * snoise(vec3(warpedSt * 1.2, uTime * 0.35));
-  n += 0.25 * snoise(vec3(warpedSt * 2.4, uTime * 0.5));
-  n += 0.125 * snoise(vec3(warpedSt * 4.8, uTime * 0.7));
-  n += 0.0625 * snoise(vec3(warpedSt * 9.6, uTime * 0.9));
+  n += 0.5 * snoise(vec3(warpedSt * 1.2, uTime * 0.55));
+  n += 0.25 * snoise(vec3(warpedSt * 2.4, uTime * 0.75));
+  n += 0.125 * snoise(vec3(warpedSt * 4.8, uTime * 1.0));
+  n += 0.0625 * snoise(vec3(warpedSt * 9.6, uTime * 1.3));
 
   float brightness = smoothstep(-0.4, 0.7, n);
   brightness = mix(0.82, 0.98, brightness);
