@@ -1,5 +1,4 @@
 import { AnimatePresence } from 'framer-motion';
-import { Shield } from 'lucide-react';
 import { CLASS_META } from '../classMetadata';
 import UploadZone from './UploadZone';
 import AnalyzingState from './AnalyzingState';
@@ -106,14 +105,6 @@ export default function ScanSection({
         </div>
       </div>
 
-      {/* Medical disclaimer */}
-      <div className="mt-12 glass px-5 py-4 flex items-start gap-3">
-        <Shield className="w-4 h-4 text-[--text-muted] mt-0.5 shrink-0" />
-        <p className="text-xs text-[--text-muted] leading-relaxed">
-          This is an educational tool built for DataQuest'26. Not intended for
-          clinical diagnosis. Always consult a medical professional.
-        </p>
-      </div>
     </section>
   );
 }

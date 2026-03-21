@@ -96,11 +96,6 @@ void main() {
   float glow = exp(-dist * dist * 4.0) * 0.18;
   brightness += glow;
 
-  // Ripple ring
-  float ring = abs(dist - 0.3 - sin(uTime * 2.0) * 0.05);
-  float ripple = smoothstep(0.04, 0.0, ring) * 0.06;
-  brightness += ripple;
-
   // Vignette
   float vignette = 1.0 - length(st) * 0.15;
   brightness *= vignette;
@@ -162,7 +157,7 @@ export default function Background3D({ mousePosition, appState }: Background3DPr
 
   if (isMobile) return null;
 
-  const speed = appState === 'analyzing' ? 2.0 : appState === 'results' ? 0.4 : 0.7;
+  const speed = appState === 'analyzing' ? 2.0 : appState === 'results' ? 0.6 : 1.2;
 
   return (
     <div className="fixed inset-0 -z-10">

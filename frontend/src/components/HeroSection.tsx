@@ -24,28 +24,8 @@ export default function HeroSection() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="mt-4 text-lg sm:text-xl text-[--text-muted] tracking-[0.2em] uppercase text-sm"
         >
-          neural mri intelligence
+          MRI Brain Classifier
         </motion.p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
-        className="absolute bottom-24 flex items-center gap-8"
-      >
-        {['CNN Model', '3D Mapping', '4-Class Detection'].map((tag, i) => (
-          <motion.div
-            key={tag}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 + i * 0.15 }}
-            className="flex items-center gap-2"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[--text-muted]" />
-            <span className="text-xs text-[--text-muted] tracking-wide">{tag}</span>
-          </motion.div>
-        ))}
       </motion.div>
 
       <motion.button

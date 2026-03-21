@@ -174,7 +174,7 @@ export default function BrainModel({
   highlightColor,
   brainRegion,
 }: BrainModelProps) {
-  const [rotating, setRotating] = useState(false);
+  const [rotating, setRotating] = useState(true);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>

@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import Header from './components/Header';
 import Background3D from './components/Background3D';
 import HeroSection from './components/HeroSection';
 import ScanSection from './components/ScanSection';
@@ -66,7 +65,6 @@ function App() {
     <div className="relative">
       <Background3D mousePosition={mousePosition} appState={appState} />
       <div className="relative z-10">
-        <Header />
         <HeroSection />
         <ScanSection
           appState={appState}
