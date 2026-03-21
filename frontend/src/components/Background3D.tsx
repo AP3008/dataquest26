@@ -1,7 +1,7 @@
 "use no memo";
 
 import { useRef, useMemo, useEffect, useState, type MutableRefObject } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { AppState } from '../types';
 
@@ -71,22 +71,15 @@ uniform vec2 uMouse;
 varying vec2 vUv;
 
 void main() {
-  // Map UV to centered coords with aspect correction
   vec2 st = vUv * 2.0 - 1.0;
-
-  // Mouse position in same space
   vec2 mouse = uMouse;
-
-  // Distance from cursor
   float dist = length(st - mouse);
 
-  // Warp noise coords near cursor — push the clouds apart
+  // Warp noise coords near cursor
   vec2 warpedSt = st;
   vec2 dir = normalize(st - mouse + 0.001);
   float warpStrength = smoothstep(0.8, 0.0, dist) * 0.4;
   warpedSt += dir * warpStrength;
-
-  // Also shift globally with mouse for parallax
   warpedSt += mouse * 0.15;
 
   // Multi-octave noise
@@ -96,20 +89,19 @@ void main() {
   n += 0.125 * snoise(vec3(warpedSt * 4.8, uTime * 0.25));
   n += 0.0625 * snoise(vec3(warpedSt * 9.6, uTime * 0.32));
 
-  // Base cloud brightness
   float brightness = smoothstep(-0.4, 0.7, n);
   brightness = mix(0.82, 0.98, brightness);
 
-  // Cursor glow — bright radial light around mouse
+  // Cursor glow
   float glow = exp(-dist * dist * 4.0) * 0.18;
   brightness += glow;
 
-  // Subtle cursor ripple ring
+  // Ripple ring
   float ring = abs(dist - 0.3 - sin(uTime * 2.0) * 0.05);
   float ripple = smoothstep(0.04, 0.0, ring) * 0.06;
   brightness += ripple;
 
-  // Darken edges slightly (vignette)
+  // Vignette
   float vignette = 1.0 - length(st) * 0.15;
   brightness *= vignette;
 
@@ -134,14 +126,13 @@ function CloudPlane({ mouseRef, speed }: { mouseRef: MouseRef; speed: number }) 
   useFrame(({ clock }) => {
     if (!matRef.current) return;
     matRef.current.uniforms.uTime.value = clock.getElapsedTime() * speed;
-    // Fast smooth follow
     smoothMouse.current.x += (mouseRef.current.x - smoothMouse.current.x) * 0.08;
     smoothMouse.current.y += (mouseRef.current.y - smoothMouse.current.y) * 0.08;
     matRef.current.uniforms.uMouse.value.set(smoothMouse.current.x, smoothMouse.current.y);
   });
 
   return (
-    <mesh>
+    <mesh renderOrder={0}>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={matRef}
@@ -154,103 +145,102 @@ function CloudPlane({ mouseRef, speed }: { mouseRef: MouseRef; speed: number }) 
   );
 }
 
-function AtmosphericParticles({ mouseRef }: { mouseRef: MouseRef }) {
+const COLS = 150;
+const ROWS = 100;
+const COUNT = COLS * ROWS;
+const PLANE_WIDTH = 20;
+const PLANE_HEIGHT = 14;
+const RADIUS = 1.5;
+const PUSH_STRENGTH = 0.8;
+const RETURN_SPEED = 0.06;
+
+function ParticleGrid({ mouseRef }: { mouseRef: MouseRef }) {
   const pointsRef = useRef<THREE.Points>(null);
   const smoothMouse = useRef({ x: 0, y: 0 });
+  const { camera, viewport } = useThree();
 
-  const count = 600;
-  const { positions, depths, sizes } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const dep = new Float32Array(count);
-    const sz = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 8;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 6;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 4;
-      dep[i] = pos[i * 3 + 2];
-      sz[i] = 0.5 + Math.random() * 1.5; // varied sizes
+  const { positions, originalPositions } = useMemo(() => {
+    const pos = new Float32Array(COUNT * 3);
+    const orig = new Float32Array(COUNT * 3);
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const i = (row * COLS + col) * 3;
+        const x = (col / (COLS - 1) - 0.5) * PLANE_WIDTH;
+        const y = (row / (ROWS - 1) - 0.5) * PLANE_HEIGHT;
+        pos[i] = x;
+        pos[i + 1] = y;
+        pos[i + 2] = 0;
+        orig[i] = x;
+        orig[i + 1] = y;
+        orig[i + 2] = 0;
+      }
     }
-    return { positions: pos, depths: dep, sizes: sz };
+    return { positions: pos, originalPositions: orig };
   }, []);
 
-  const basePositions = useMemo(() => new Float32Array(positions), [positions]);
-
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!pointsRef.current) return;
-    const time = clock.getElapsedTime();
 
-    // Fast smooth follow
-    smoothMouse.current.x += (mouseRef.current.x - smoothMouse.current.x) * 0.06;
-    smoothMouse.current.y += (mouseRef.current.y - smoothMouse.current.y) * 0.06;
-    const mx = smoothMouse.current.x;
-    const my = smoothMouse.current.y;
+    smoothMouse.current.x += (mouseRef.current.x - smoothMouse.current.x) * 0.08;
+    smoothMouse.current.y += (mouseRef.current.y - smoothMouse.current.y) * 0.08;
 
-    const pos = pointsRef.current.geometry.attributes.position;
+    const fov = (camera as THREE.PerspectiveCamera).fov;
+    const cameraZ = camera.position.z;
+    const visibleHeight = 2 * Math.tan((fov * Math.PI) / 360) * cameraZ;
+    const visibleWidth = visibleHeight * viewport.aspect;
+    const mouseWorldX = smoothMouse.current.x * visibleWidth / 2;
+    const mouseWorldY = smoothMouse.current.y * visibleHeight / 2;
 
-    for (let i = 0; i < count; i++) {
-      const bx = basePositions[i * 3];
-      const by = basePositions[i * 3 + 1];
-      const bz = basePositions[i * 3 + 2];
+    const posAttr = pointsRef.current.geometry.attributes.position;
+    const posArray = posAttr.array as Float32Array;
+    const radiusSq = RADIUS * RADIUS;
 
-      // Organic drift
-      const phase = i * 0.37;
-      const driftX = Math.sin(time * 0.12 + phase) * 0.12;
-      const driftY = Math.cos(time * 0.1 + phase * 1.3) * 0.1;
+    for (let i = 0; i < COUNT; i++) {
+      const idx = i * 3;
+      const ox = originalPositions[idx];
+      const oy = originalPositions[idx + 1];
 
-      // Mouse parallax — deeper particles move less
-      const depthFactor = (depths[i] + 2) / 4;
-      const parallaxX = mx * 0.6 * depthFactor;
-      const parallaxY = my * 0.6 * depthFactor;
-
-      // Cursor repulsion — particles push away from mouse
-      const px = bx + parallaxX + driftX;
-      const py = by + parallaxY + driftY;
-      // Convert mouse from [-1,1] to world space (~[-4,3])
-      const mouseWorldX = mx * 4;
-      const mouseWorldY = my * 3;
-      const dx = px - mouseWorldX;
-      const dy = py - mouseWorldY;
+      const dx = ox - mouseWorldX;
+      const dy = oy - mouseWorldY;
       const distSq = dx * dx + dy * dy;
-      const repulseRadius = 2.5;
-      let repulseX = 0;
-      let repulseY = 0;
-      if (distSq < repulseRadius * repulseRadius && distSq > 0.001) {
+
+      let targetX = ox;
+      let targetY = oy;
+
+      if (distSq < radiusSq && distSq > 0.0001) {
         const dist = Math.sqrt(distSq);
-        const force = (1 - dist / repulseRadius) * 0.8;
-        repulseX = (dx / dist) * force;
-        repulseY = (dy / dist) * force;
+        const force = (1 - dist / RADIUS) * PUSH_STRENGTH;
+        targetX = ox + (dx / dist) * force;
+        targetY = oy + (dy / dist) * force;
       }
 
-      pos.setXYZ(i, px + repulseX, py + repulseY, bz);
+      posArray[idx] += (targetX - posArray[idx]) * RETURN_SPEED;
+      posArray[idx + 1] += (targetY - posArray[idx + 1]) * RETURN_SPEED;
     }
-    pos.needsUpdate = true;
 
-    pointsRef.current.rotation.z = time * 0.005;
+    posAttr.needsUpdate = true;
   });
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} renderOrder={1}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute
+          attach="attributes-position"
+          count={COUNT}
+          array={positions}
+          itemSize={3}
+        />
       </bufferGeometry>
       <pointsMaterial
-        size={0.025}
-        color="#888888"
+        size={0.03}
+        color="#555555"
         transparent
-        opacity={0.45}
+        opacity={0.4}
         sizeAttenuation
         depthWrite={false}
+        depthTest={false}
       />
     </points>
-  );
-}
-
-function Scene({ mouseRef, speed }: { mouseRef: MouseRef; speed: number }) {
-  return (
-    <>
-      <CloudPlane mouseRef={mouseRef} speed={speed} />
-      <AtmosphericParticles mouseRef={mouseRef} />
-    </>
   );
 }
 
@@ -276,11 +266,12 @@ export default function Background3D({ mousePosition, appState }: Background3DPr
   return (
     <div className="fixed inset-0 -z-10">
       <Canvas
-        camera={{ position: [0, 0, 1], fov: 50 }}
+        camera={{ position: [0, 0, 5], fov: 50 }}
         dpr={[1, 1.5]}
         gl={{ antialias: false }}
       >
-        <Scene mouseRef={mousePosition} speed={speed} />
+        <CloudPlane mouseRef={mousePosition} speed={speed} />
+        <ParticleGrid mouseRef={mousePosition} />
       </Canvas>
     </div>
   );
