@@ -9,6 +9,6 @@ const client = axios.create({
 export async function predict(file: File): Promise<PredictionResult> {
   const formData = new FormData();
   formData.append('file', file);
-  const { data } = await client.post<PredictionResult>('/predict', formData);
+  const { data } = await client.post<PredictionResult>('/upload-mri', formData);
   return data;
 }
