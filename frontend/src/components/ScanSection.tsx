@@ -73,7 +73,7 @@ export default function ScanSection({
 
         {/* Right column: 3D brain (always visible) */}
         <div className="glass p-4 flex flex-col order-first lg:order-last">
-          <div className="min-h-[400px] lg:min-h-[500px] rounded-lg overflow-hidden">
+          <div className="h-[500px] rounded-lg overflow-hidden">
             <BrainModel
               predictedClass={result?.predicted_class ?? ''}
               highlightColor={meta?.color ?? '#6b6b6b'}

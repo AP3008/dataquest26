@@ -1,7 +1,7 @@
 "use no memo";
 
 import { useRef, useMemo, useEffect, useState, type MutableRefObject } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { AppState } from '../types';
 
@@ -132,7 +132,7 @@ function CloudPlane({ mouseRef, speed }: { mouseRef: MouseRef; speed: number }) 
   });
 
   return (
-    <mesh renderOrder={0}>
+    <mesh>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={matRef}
@@ -142,105 +142,6 @@ function CloudPlane({ mouseRef, speed }: { mouseRef: MouseRef; speed: number }) 
         depthWrite={false}
       />
     </mesh>
-  );
-}
-
-const COLS = 150;
-const ROWS = 100;
-const COUNT = COLS * ROWS;
-const PLANE_WIDTH = 20;
-const PLANE_HEIGHT = 14;
-const RADIUS = 1.5;
-const PUSH_STRENGTH = 0.8;
-const RETURN_SPEED = 0.06;
-
-function ParticleGrid({ mouseRef }: { mouseRef: MouseRef }) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const smoothMouse = useRef({ x: 0, y: 0 });
-  const { camera, viewport } = useThree();
-
-  const { positions, originalPositions } = useMemo(() => {
-    const pos = new Float32Array(COUNT * 3);
-    const orig = new Float32Array(COUNT * 3);
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        const i = (row * COLS + col) * 3;
-        const x = (col / (COLS - 1) - 0.5) * PLANE_WIDTH;
-        const y = (row / (ROWS - 1) - 0.5) * PLANE_HEIGHT;
-        pos[i] = x;
-        pos[i + 1] = y;
-        pos[i + 2] = 0;
-        orig[i] = x;
-        orig[i + 1] = y;
-        orig[i + 2] = 0;
-      }
-    }
-    return { positions: pos, originalPositions: orig };
-  }, []);
-
-  useFrame(() => {
-    if (!pointsRef.current) return;
-
-    smoothMouse.current.x += (mouseRef.current.x - smoothMouse.current.x) * 0.08;
-    smoothMouse.current.y += (mouseRef.current.y - smoothMouse.current.y) * 0.08;
-
-    const fov = (camera as THREE.PerspectiveCamera).fov;
-    const cameraZ = camera.position.z;
-    const visibleHeight = 2 * Math.tan((fov * Math.PI) / 360) * cameraZ;
-    const visibleWidth = visibleHeight * viewport.aspect;
-    const mouseWorldX = smoothMouse.current.x * visibleWidth / 2;
-    const mouseWorldY = smoothMouse.current.y * visibleHeight / 2;
-
-    const posAttr = pointsRef.current.geometry.attributes.position;
-    const posArray = posAttr.array as Float32Array;
-    const radiusSq = RADIUS * RADIUS;
-
-    for (let i = 0; i < COUNT; i++) {
-      const idx = i * 3;
-      const ox = originalPositions[idx];
-      const oy = originalPositions[idx + 1];
-
-      const dx = ox - mouseWorldX;
-      const dy = oy - mouseWorldY;
-      const distSq = dx * dx + dy * dy;
-
-      let targetX = ox;
-      let targetY = oy;
-
-      if (distSq < radiusSq && distSq > 0.0001) {
-        const dist = Math.sqrt(distSq);
-        const force = (1 - dist / RADIUS) * PUSH_STRENGTH;
-        targetX = ox + (dx / dist) * force;
-        targetY = oy + (dy / dist) * force;
-      }
-
-      posArray[idx] += (targetX - posArray[idx]) * RETURN_SPEED;
-      posArray[idx + 1] += (targetY - posArray[idx + 1]) * RETURN_SPEED;
-    }
-
-    posAttr.needsUpdate = true;
-  });
-
-  return (
-    <points ref={pointsRef} renderOrder={1}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={COUNT}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.03}
-        color="#555555"
-        transparent
-        opacity={0.4}
-        sizeAttenuation
-        depthWrite={false}
-        depthTest={false}
-      />
-    </points>
   );
 }
 
@@ -266,12 +167,11 @@ export default function Background3D({ mousePosition, appState }: Background3DPr
   return (
     <div className="fixed inset-0 -z-10">
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        camera={{ position: [0, 0, 1], fov: 50 }}
         dpr={[1, 1.5]}
         gl={{ antialias: false }}
       >
         <CloudPlane mouseRef={mousePosition} speed={speed} />
-        <ParticleGrid mouseRef={mousePosition} />
       </Canvas>
     </div>
   );

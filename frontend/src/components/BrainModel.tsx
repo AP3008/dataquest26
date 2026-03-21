@@ -1,8 +1,8 @@
 "use no memo";
 
-import { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import { useRef, useMemo, useState, useEffect, Suspense } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, Bounds } from '@react-three/drei';
 import * as THREE from 'three';
 import brainUrl from '../assets/brain.glb?url';
 
@@ -104,46 +104,23 @@ function Brain({
   const materialsReady = useRef(false);
 
   const { scene } = useGLTF(brainUrl);
-  const { camera } = useThree();
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
-  // Center, scale, and apply materials
+  // Apply gray materials to prevent black blob
   useEffect(() => {
-    // Compute bounding box of the raw model
-    const bbox = new THREE.Box3().setFromObject(clonedScene);
-    const center = bbox.getCenter(new THREE.Vector3());
-    const size = bbox.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-
-    // Normalize to fit within ~2 units and center at origin
-    const desiredSize = 2.0;
-    const scale = desiredSize / maxDim;
-    clonedScene.scale.setScalar(scale);
-
-    // After scaling, recompute center and shift to origin
-    const scaledCenter = center.multiplyScalar(scale);
-    clonedScene.position.set(-scaledCenter.x, -scaledCenter.y, -scaledCenter.z);
-
-    // Apply materials
     clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.material = new THREE.MeshPhysicalMaterial({
+        child.material = new THREE.MeshStandardMaterial({
           color: NEUTRAL_COLOR.clone(),
-          metalness: 0.1,
+          metalness: 0.15,
           roughness: 0.6,
-          clearcoat: 0.1,
-          clearcoatRoughness: 0.4,
           emissive: new THREE.Color('#000000'),
           emissiveIntensity: 0,
         });
       }
     });
-
-    // Point camera at origin
-    camera.lookAt(0, 0, 0);
-
     materialsReady.current = true;
-  }, [clonedScene, camera]);
+  }, [clonedScene]);
 
   // Trigger scan spin on first result
   useEffect(() => {
@@ -172,7 +149,7 @@ function Brain({
     // Tumor highlighting or healthy tint
     clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const mat = child.material as THREE.MeshPhysicalMaterial;
+        const mat = child.material as THREE.MeshStandardMaterial;
         if (brainRegion) {
           mat.color.lerp(targetColor, 0.03);
           const pulse = 0.05 + Math.sin(clock.getElapsedTime() * Math.PI) * 0.1 + 0.1;
@@ -221,7 +198,7 @@ export default function BrainModel({
 }: BrainModelProps) {
   return (
     <Canvas
-      camera={{ position: [0, 0, 3.5], fov: 45 }}
+      camera={{ position: [0, 0, 5], fov: 45 }}
       style={{ width: '100%', height: '100%' }}
       gl={{ alpha: true }}
     >
@@ -230,21 +207,25 @@ export default function BrainModel({
       <directionalLight position={[-3, 3, -3]} intensity={0.6} color="#ffffff" />
       <directionalLight position={[0, -3, 2]} intensity={0.3} color="#ffffff" />
       <hemisphereLight groundColor="#cccccc" color="#ffffff" intensity={0.5} />
-      <Brain
-        predictedClass={predictedClass}
-        highlightColor={highlightColor}
-        brainRegion={brainRegion}
-      />
+      <Suspense fallback={null}>
+        <Bounds fit clip observe margin={1.5}>
+          <Brain
+            predictedClass={predictedClass}
+            highlightColor={highlightColor}
+            brainRegion={brainRegion}
+          />
+        </Bounds>
+      </Suspense>
       <OrbitControls
         autoRotate
         autoRotateSpeed={0.5}
         enablePan={false}
         minDistance={2}
-        maxDistance={6}
+        maxDistance={8}
         maxPolarAngle={Math.PI * 0.75}
         minPolarAngle={Math.PI * 0.25}
         enableDamping
-        target={[0, 0, 0]}
+        makeDefault
       />
     </Canvas>
   );
