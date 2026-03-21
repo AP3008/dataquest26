@@ -98,9 +98,6 @@ function Brain({
   brainRegion: string | null;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const rotationSpeed = useRef(0.003);
-  const [hasResult, setHasResult] = useState(false);
-  const scanStartRef = useRef(0);
   const materialsReady = useRef(false);
 
   const { scene } = useGLTF(brainUrl);
@@ -122,29 +119,10 @@ function Brain({
     materialsReady.current = true;
   }, [clonedScene]);
 
-  // Trigger scan spin on first result
-  useEffect(() => {
-    if (predictedClass) {
-      setHasResult(true);
-      scanStartRef.current = performance.now() / 1000;
-      rotationSpeed.current = 0.03;
-    }
-  }, [predictedClass]);
-
   const targetColor = useMemo(() => new THREE.Color(highlightColor), [highlightColor]);
 
   useFrame(({ clock }) => {
     if (!groupRef.current || !materialsReady.current) return;
-
-    // Ease rotation speed back to idle after scan spin
-    if (hasResult) {
-      const elapsed = clock.getElapsedTime() - scanStartRef.current;
-      if (elapsed > 1) {
-        rotationSpeed.current += (0.003 - rotationSpeed.current) * 0.02;
-      }
-    }
-
-    groupRef.current.rotation.y += rotationSpeed.current;
 
     // Tumor highlighting or healthy tint
     clonedScene.traverse((child) => {
@@ -196,38 +174,60 @@ export default function BrainModel({
   highlightColor,
   brainRegion,
 }: BrainModelProps) {
+  const [rotating, setRotating] = useState(false);
+
   return (
-    <Canvas
-      camera={{ position: [0, 0, 5], fov: 45 }}
-      style={{ width: '100%', height: '100%' }}
-      gl={{ alpha: true }}
-    >
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} intensity={1.2} color="#ffffff" />
-      <directionalLight position={[-3, 3, -3]} intensity={0.6} color="#ffffff" />
-      <directionalLight position={[0, -3, 2]} intensity={0.3} color="#ffffff" />
-      <hemisphereLight groundColor="#cccccc" color="#ffffff" intensity={0.5} />
-      <Suspense fallback={null}>
-        <Bounds fit clip observe margin={1.5}>
-          <Brain
-            predictedClass={predictedClass}
-            highlightColor={highlightColor}
-            brainRegion={brainRegion}
-          />
-        </Bounds>
-      </Suspense>
-      <OrbitControls
-        autoRotate
-        autoRotateSpeed={0.5}
-        enablePan={false}
-        minDistance={2}
-        maxDistance={8}
-        maxPolarAngle={Math.PI * 0.75}
-        minPolarAngle={Math.PI * 0.25}
-        enableDamping
-        makeDefault
-      />
-    </Canvas>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        style={{ width: '100%', height: '100%' }}
+        gl={{ alpha: true }}
+      >
+        <ambientLight intensity={0.8} />
+        <directionalLight position={[5, 5, 5]} intensity={1.2} color="#ffffff" />
+        <directionalLight position={[-3, 3, -3]} intensity={0.6} color="#ffffff" />
+        <directionalLight position={[0, -3, 2]} intensity={0.3} color="#ffffff" />
+        <hemisphereLight groundColor="#cccccc" color="#ffffff" intensity={0.5} />
+        <Suspense fallback={null}>
+          <Bounds fit clip observe margin={1.5}>
+            <Brain
+              predictedClass={predictedClass}
+              highlightColor={highlightColor}
+              brainRegion={brainRegion}
+            />
+          </Bounds>
+        </Suspense>
+        <OrbitControls
+          enablePan={false}
+          minDistance={2}
+          maxDistance={8}
+          maxPolarAngle={Math.PI * 0.75}
+          minPolarAngle={Math.PI * 0.25}
+          enableDamping
+          makeDefault
+          autoRotate={rotating}
+          autoRotateSpeed={2}
+        />
+      </Canvas>
+      <button
+        onClick={() => setRotating((r) => !r)}
+        style={{
+          position: 'absolute',
+          bottom: 12,
+          right: 12,
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(0,0,0,0.1)',
+          borderRadius: 8,
+          padding: '6px 12px',
+          fontSize: 13,
+          cursor: 'pointer',
+          color: '#333',
+        }}
+      >
+        {rotating ? 'Pause' : 'Rotate'}
+      </button>
+    </div>
   );
 }
 
