@@ -21,3 +21,7 @@ dist-ssr/
 
 venv/ 
 
+# Agents
+.claude/
+.agents/
+skills-lock.json 
