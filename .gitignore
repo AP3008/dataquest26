@@ -1,14 +1,13 @@
-# Misc. 
+# Misc
 .DS_Store
+*.log
 
 # Env
-
 .env
 .env*
 *.local
 
 # Frontend
-
 node_modules/
 dist/
 dist-ssr/
@@ -17,7 +16,19 @@ dist-ssr/
 .pnpm-store
 .eslintcache
 
-# Python 
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 
-venv/ 
+# Model weights (large files — use Git LFS or download separately)
+# Uncomment the next line if you do NOT want .pth files in the repo:
+# *.pth
 
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db

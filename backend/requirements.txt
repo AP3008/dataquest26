@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 python-multipart
-# Add torch and torchvision when you are ready to integrate the real model!
-# torch
-# torchvision
-# Pillow
+torch
+torchvision
+Pillow
