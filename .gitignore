@@ -30,5 +30,10 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
+# Agents
+.claude/
+.agents/
+skills-lock.json 
+
 # OS
 Thumbs.db
