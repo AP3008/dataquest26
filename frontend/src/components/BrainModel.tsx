@@ -280,7 +280,7 @@ function Brain({
 
       // Pulsing glow
       u.uHighlightStrength.value =
-        0.4 + Math.sin(clock.getElapsedTime() * Math.PI) * 0.3;
+        1.0 + Math.sin(clock.getElapsedTime() * Math.PI) * 0.5;
 
       // Reset base emissive to avoid green bleed-through from previous healthy scan
       if (mat) {

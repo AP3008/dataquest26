@@ -21,7 +21,7 @@ export const CLASS_META: Record<string, ClassMeta> = {
     label: 'Meningioma Tumor',
     description:
       'A tumor that forms on the membranes (meninges) that cover the brain and spinal cord. Most meningiomas are slow-growing and benign.',
-    color: '#d97706',
+    color: '#fbbf24',
     severity: 'medium',
     severityLabel: 'Medium Severity',
     brainRegion: 'meninges',

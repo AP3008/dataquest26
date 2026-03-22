@@ -80,7 +80,7 @@ export function createHighlightMaterial(opts: {
         }
 
         hlIntensity *= uHighlightStrength;
-        totalEmissiveRadiance += uHighlightColor * hlIntensity;
+        totalEmissiveRadiance += uHighlightColor * hlIntensity * 2.5;
       }`,
     );
   };
