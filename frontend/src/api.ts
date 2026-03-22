@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { PredictionResult } from './types';
 
 const client = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || '',
   timeout: 30000,
 });
 
