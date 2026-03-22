@@ -1,4 +1,4 @@
-# NeuraScan — Brain Tumor MRI Classifier
+# ArgusLabs — Brain Tumor MRI Classifier
 
 **DataQuest ’26 — Healthcare & Wellbeing**
 
