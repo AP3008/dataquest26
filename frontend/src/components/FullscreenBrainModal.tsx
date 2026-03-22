@@ -89,6 +89,7 @@ export default function FullscreenBrainModal({
           predictedClass={predictedClass}
           highlightColor={highlightColor}
           brainRegion={brainRegion}
+          enableCameraSnap={false}
         />
       </div>
 

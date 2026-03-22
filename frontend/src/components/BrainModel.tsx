@@ -25,6 +25,7 @@ interface BrainModelProps {
   highlightColor: string;
   brainRegion: string | null;
   onRequestFullscreen?: () => void;
+  enableCameraSnap?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -341,6 +342,7 @@ export default function BrainModel({
   highlightColor,
   brainRegion,
   onRequestFullscreen,
+  enableCameraSnap = true,
 }: BrainModelProps) {
   const [rotating, setRotating] = useState(true);
   const controlsRef = useRef<any>(null);
@@ -389,12 +391,14 @@ export default function BrainModel({
             />
           </Bounds>
         </Suspense>
-        <CameraAnimator
-          controlsRef={controlsRef}
-          brainRegion={brainRegion}
-          brainMetricsRef={brainMetricsRef}
-          onRotateChange={setRotating}
-        />
+        {enableCameraSnap && (
+          <CameraAnimator
+            controlsRef={controlsRef}
+            brainRegion={brainRegion}
+            brainMetricsRef={brainMetricsRef}
+            onRotateChange={setRotating}
+          />
+        )}
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
