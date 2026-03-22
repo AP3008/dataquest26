@@ -1,4 +1,11 @@
 ![Description](https://raw.githubusercontent.com/AP3008/dataquest26/main/assets/hero.png)
+<p align="center">
+  <img src="https://img.shields.io/badge/Accuracy-91.9%25-black"/>
+  <img src="https://img.shields.io/badge/Model-CNN-black"/>
+  <img src="https://img.shields.io/badge/Backend-FastAPI-black"/>
+  <img src="https://img.shields.io/badge/Frontend-React%20%2B%20TS-black"/>
+</p>
+
 # ArgusLabs — Brain Tumor MRI Classifier
 
 **DataQuest ’26 — Healthcare & Wellbeing**
