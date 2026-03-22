@@ -24,6 +24,7 @@ interface BrainModelProps {
   predictedClass: string;
   highlightColor: string;
   brainRegion: string | null;
+  onRequestFullscreen?: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -339,6 +340,7 @@ export default function BrainModel({
   predictedClass,
   highlightColor,
   brainRegion,
+  onRequestFullscreen,
 }: BrainModelProps) {
   const [rotating, setRotating] = useState(true);
   const controlsRef = useRef<any>(null);
@@ -406,6 +408,39 @@ export default function BrainModel({
           autoRotateSpeed={2}
         />
       </Canvas>
+
+      {/* Fullscreen expand button — top right */}
+      {onRequestFullscreen && (
+        <button
+          onClick={onRequestFullscreen}
+          title="Fullscreen"
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: 'rgba(255,255,255,0.85)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: 8,
+            padding: '6px 10px',
+            fontSize: 13,
+            cursor: 'pointer',
+            color: '#333',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 3 21 3 21 9" />
+            <polyline points="9 21 3 21 3 15" />
+            <line x1="21" y1="3" x2="14" y2="10" />
+            <line x1="3" y1="21" x2="10" y2="14" />
+          </svg>
+        </button>
+      )}
+
+      {/* Rotate toggle — bottom right */}
       <button
         onClick={() => setRotating((r) => !r)}
         style={{

@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { CLASS_META } from '../classMetadata';
 import UploadZone from './UploadZone';
 import AnalyzingState from './AnalyzingState';
 import ResultsPanel from './ResultsPanel';
 import BrainModel from './BrainModel';
+import FullscreenBrainModal from './FullscreenBrainModal';
 import type { PredictionResult, AppState } from '../types';
 
 interface ScanSectionProps {
@@ -30,6 +32,13 @@ export default function ScanSection({
   onNewScan,
 }: ScanSectionProps) {
   const meta = result ? CLASS_META[result.predicted_class] : null;
+  const [showFullscreen, setShowFullscreen] = useState(false);
+
+  const statusText = meta?.brainRegion
+    ? `Highlighting: ${meta.brainRegion} — typical ${meta.label.toLowerCase().replace(' tumor', '')} location`
+    : result
+      ? 'No regions highlighted — scan appears healthy'
+      : 'Upload a scan to begin analysis';
 
   return (
     <section id="scan" className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -77,6 +86,7 @@ export default function ScanSection({
               predictedClass={result?.predicted_class ?? ''}
               highlightColor={meta?.color ?? '#6b6b6b'}
               brainRegion={meta?.brainRegion ?? null}
+              onRequestFullscreen={() => setShowFullscreen(true)}
             />
           </div>
           <div className="mt-3 flex items-center gap-2 px-2">
@@ -105,6 +115,16 @@ export default function ScanSection({
         </div>
       </div>
 
+      {showFullscreen && (
+        <FullscreenBrainModal
+          predictedClass={result?.predicted_class ?? ''}
+          highlightColor={meta?.color ?? '#6b6b6b'}
+          brainRegion={meta?.brainRegion ?? null}
+          statusText={statusText}
+          statusColor={meta?.brainRegion ? meta.color : null}
+          onClose={() => setShowFullscreen(false)}
+        />
+      )}
     </section>
   );
 }
