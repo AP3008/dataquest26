@@ -1,74 +1,110 @@
-# Brain Tumor Detection — DataQuest 26
+# NeuraScan — Brain Tumor MRI Classifier
 
-A machine learning model that analyzes brain MRI images and predicts whether a tumor is present or not.
+**DataQuest ’26 — Healthcare & Wellbeing**
 
-Built as a hackathon submission for DataQuest 26.
-
----
-
-## What It Does
-
-Upload a brain MRI scan (image file) and the model will classify it as:
-- Tumor Detected
-- No Tumor Detected
-
-The goal is to assist in early detection of brain tumors by providing a fast, automated second opinion on MRI scans.
+A full-stack prototype that classifies brain MRI scans into **four categories** using a **custom CNN trained from scratch** (no pretrained backbones), with a **React** frontend and **FastAPI** inference API.
 
 ---
 
-## How It Works
+## What it does
 
-1. The user provides a brain MRI image as input.
-2. The image is preprocessed (resized, normalized) to match the model's expected format.
-3. A trained ML/deep learning model runs inference on the image.
-4. The model outputs a prediction — tumor or no tumor — along with a confidence score.
+Upload a brain MRI image and the model returns:
 
----
+| Class | Description |
+|-------|-------------|
+| **Glioma** | Tumor originating in glial cells |
+| **Meningioma** | Tumor on the membranes covering the brain |
+| **Pituitary** | Tumor in the pituitary region |
+| **No tumor** | Healthy scan (`notumor` in the API) |
 
-## Tech Stack
-
-- Python
-- PyTorch (deep learning framework)
-- OpenCV / PIL (image preprocessing)
-- NumPy
-- Jupyter Notebook (for training and experimentation)
+The UI includes an interactive 3D brain visualization driven by the model’s per-class probabilities.
 
 ---
 
-## Getting Started
+## Repository layout
 
-### Prerequisites
+```
+dataquest26/
+├── backend/          # FastAPI + PyTorch inference
+│   ├── main.py
+│   ├── inference.py
+│   ├── model.py
+│   ├── models/       # brain_tumor_classifier.pth (add locally or via LFS)
+│   ├── notebooks/    # Colab-exported training notebook
+│   └── results/      # Training plots (e.g. confusion matrix)
+├── frontend/         # React + TypeScript + Vite
+├── HANDOFF.md        # API contract for frontend ↔ backend
+└── README.md         # This file
+```
 
-Make sure you have Python 3.8+ installed, then install the required dependencies:
+---
 
-    pip install -r requirements.txt
+## Tech stack
 
-### Running the Model
+- **ML:** PyTorch, torchvision (128×128 RGB, custom `BrainTumorCNN`)
+- **API:** FastAPI, Uvicorn, `python-multipart`
+- **Frontend:** React, TypeScript, Vite, Tailwind (3D brain via Three.js assets/components)
 
-    python predict.py --image path/to/mri_scan.jpg
+---
 
-The output will display the prediction and confidence score in the terminal.
+## Getting started
+
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+API: [http://localhost:8000](http://localhost:8000) — docs at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Ensure `backend/models/brain_tumor_classifier.pth` is present (exported from the training notebook on Colab).
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App: [http://localhost:5173](http://localhost:5173) (default Vite port). The client expects the API at `http://localhost:8000` (see `frontend/src/api.ts`).
+
+---
+
+## Training
+
+Training is documented in `backend/notebooks/DataQuest26_BrainTumor.ipynb` (run on **Google Colab** with GPU). The notebook downloads data from Kaggle, trains the CNN, evaluates on a held-out test set, and saves `brain_tumor_classifier.pth`.
 
 ---
 
 ## Dataset
 
-The model was trained on a publicly available brain MRI dataset containing labeled images of tumorous and non-tumorous scans.
+[Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset) — thousands of MRI images across four classes.
 
 ---
 
 ## Results
 
-The model achieves 91.2% accuracy on the test set, demonstrating reliable classification between tumor and non-tumor MRI scans.
+On the full official **test** split (~1,600 images), the trained model reaches approximately **92% overall accuracy** (see `backend/results/` for confusion matrix and slides). Per-class precision/recall varies; **glioma** remains the hardest class.
+
+---
+
+## Frontend ↔ backend
+
+See **[HANDOFF.md](./HANDOFF.md)** for the `POST /upload-mri` contract (`multipart/form-data`, field `file`, JSON response shape).
 
 ---
 
 ## Team
 
-Built by Adam Porbanderwalla, Tareq Kurdiah, Kamyar Modabber, and Nima Abbasi.
+Adam Porbanderwalla, Tareq Kurdiah, Kamyar Modabber, Nima Abbasi.
 
 ---
 
 ## Disclaimer
 
-This tool is intended for educational and research purposes only. It is not a substitute for professional medical diagnosis.
+Educational and hackathon use only. **Not** a medical device and **not** a substitute for professional diagnosis or treatment.
