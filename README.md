@@ -1,4 +1,4 @@
-![Description](https://github.com/AP3008/dataquest26/assets/hero.png)
+![Description](https://raw.githubusercontent.com/AP3008/dataquest26/main/assets/hero.png)
 # ArgusLabs — Brain Tumor MRI Classifier
 
 **DataQuest ’26 — Healthcare & Wellbeing**
