@@ -47,10 +47,24 @@ dataquest26/
 
 ---
 
-## Getting started
+## Getting started & Deployment
 
-### Backend
+### Run with Docker (Recommended for Deployment)
 
+The project includes a multi-stage Dockerfile that builds the React frontend and serves it directly from the FastAPI backend. This is the easiest way to run and deploy the app as a single service.
+
+```bash
+docker build -t neurascan .
+docker run -p 8000:8000 neurascan
+```
+
+The app will be available at [http://localhost:8000](http://localhost:8000).
+
+*Note: Ensure `backend/models/brain_tumor_classifier.pth` is present before building!*
+
+### Run Locally (Development)
+
+**Backend:**
 ```bash
 cd backend
 python -m venv venv
@@ -58,20 +72,18 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
-
 API: [http://localhost:8000](http://localhost:8000) — docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-Ensure `backend/models/brain_tumor_classifier.pth` is present (exported from the training notebook on Colab).
+Ensure `backend/models/brain_tumor_classifier.pth` is present.
 
-### Frontend
-
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-App: [http://localhost:5173](http://localhost:5173) (default Vite port). The client expects the API at `http://localhost:8000` (see `frontend/src/api.ts`).
+App: [http://localhost:5173](http://localhost:5173). The client respects the `VITE_API_URL` environment variable to locate the API, defaulting to relative standard behavior when running together.
 
 ---
 
